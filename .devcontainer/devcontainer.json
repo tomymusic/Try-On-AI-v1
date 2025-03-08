@@ -4,8 +4,9 @@
       "repositories": {
         "tomymusic/Try-On-AI-v1": {
           "permissions": {
-            "read": true,    // Permite lectura
-            "write": true   // Permite escritura (push)
+            "read": true,
+            "write": true,
+            "admin": true  // Aquí es donde te pones como admin
           }
         }
       }
