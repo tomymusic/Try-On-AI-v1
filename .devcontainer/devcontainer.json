@@ -5,8 +5,7 @@
         "tomymusic/Try-On-AI-v1": {
           "permissions": {
             "read": true,    // Permite lectura
-            "write": true,   // Permite escritura (push)
-            "admin": false   // Permite administración
+            "write": true   // Permite escritura (push)
           }
         }
       }
