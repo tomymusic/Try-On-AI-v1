@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "240c7647721a1e82013676ff6cd0c791"
-application_url = "https://silver-yodel-jj7vvg9grr6qcq4xj-4040.app.github.dev"
+application_url = "https://humble-doodle-r46qqxwx749p34qj-4040.app.github.dev"
 embedded = true
 name = "Try-On AI"
 handle = "try-on-ai-1"
@@ -27,9 +27,9 @@ scopes = "write_products"
 
 [auth]
 redirect_urls = [
-  "https://silver-yodel-jj7vvg9grr6qcq4xj-4040.app.github.dev/auth/callback",
-  "https://silver-yodel-jj7vvg9grr6qcq4xj-4040.app.github.dev/auth/shopify/callback",
-  "https://silver-yodel-jj7vvg9grr6qcq4xj-4040.app.github.dev/api/auth/callback"
+  "https://humble-doodle-r46qqxwx749p34qj-4040.app.github.dev/auth/callback",
+  "https://humble-doodle-r46qqxwx749p34qj-4040.app.github.dev/auth/shopify/callback",
+  "https://humble-doodle-r46qqxwx749p34qj-4040.app.github.dev/api/auth/callback"
 ]
 
 [pos]
