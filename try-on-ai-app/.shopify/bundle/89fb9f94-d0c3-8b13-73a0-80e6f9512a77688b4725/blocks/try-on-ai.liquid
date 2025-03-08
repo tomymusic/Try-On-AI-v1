@@ -1,0 +1,37 @@
+{%- comment -%} Bloque Try-On AI para Shopify Theme {%- endcomment -%}
+
+<div class="try-on-ai-block">
+  <iframe 
+    src="https://ai-sdk-decor.vercel.app/" 
+    width="100%" 
+    height="{{ block.settings.height }}px" 
+    frameborder="0">
+  </iframe>
+</div>
+
+{% schema %}
+{
+  "name": "Try-On AI",
+  "target": "section",
+  "settings": [
+    {
+      "type": "range",
+      "id": "width",
+      "label": "Ancho (%)",
+      "min": 50,
+      "max": 100,
+      "step": 5,
+      "default": 100
+    },
+    {
+      "type": "range",
+      "id": "height",
+      "label": "Altura (px)",
+      "min": 400,
+      "max": 1000,
+      "step": 50,
+      "default": 600
+    }
+  ]
+}
+{% endschema %}

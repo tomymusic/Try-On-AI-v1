@@ -1,0 +1,15 @@
+filter.lfs.smudge=git-lfs smudge -- %f
+filter.lfs.process=git-lfs filter-process
+filter.lfs.required=true
+filter.lfs.clean=git-lfs clean -- %f
+user.name=tomymusic
+user.email=tomasnumber1@gmail.com
+gpg.program=/.codespaces/bin/gh-gpgsign
+init.defaultbranch=main
+credential.helper=/.codespaces/bin/gitcredential_github.sh
+core.repositoryformatversion=0
+core.filemode=true
+core.bare=false
+core.logallrefupdates=true
+remote.origin.url=https://github.com/tomymusic/Shopify-CLI-App-for-Try-On-AI.git
+remote.origin.fetch=+refs/heads/*:refs/remotes/origin/*
