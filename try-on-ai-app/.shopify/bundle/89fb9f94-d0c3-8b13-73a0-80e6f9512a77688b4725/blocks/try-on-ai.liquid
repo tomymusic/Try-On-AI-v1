@@ -1,37 +1,53 @@
 {%- comment -%} Bloque Try-On AI para Shopify Theme {%- endcomment -%}
 
-<div class="try-on-ai-block">
+<div class="try-on-ai-block" style="overflow: hidden; max-width: 100%; width: 100%;">
   <iframe 
+    id="tryOnIframe"
     src="https://ai-sdk-decor.vercel.app/?handle={{ product.handle }}"
     width="100%" 
-    height="{{ block.settings.height }}px" 
-    frameborder="0">
+    height="1400px" {%- comment -%} Aseguramos un tamaño inicial aún mayor {%- endcomment -%}
+    frameborder="0"
+    scrolling="no"
+    style="overflow: hidden; border: none; display: block; min-height: 1400px;">
   </iframe>
 </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const iframe = document.getElementById("tryOnIframe");
+
+    function adjustIframeHeight() {
+      if (!iframe) return;
+      try {
+        const newHeight = iframe.contentWindow.document.body.scrollHeight + 200; // 🔥 Aumentamos el margen extra
+        if (newHeight) {
+          iframe.style.height = newHeight + "px";
+        }
+      } catch (error) {
+        console.warn("⚠️ No se pudo acceder a la altura del iframe directamente.");
+      }
+    }
+
+    // Ajustar altura después de la carga
+    iframe.onload = function() {
+      setTimeout(adjustIframeHeight, 3000); // ⏳ Aumentamos espera a 3s
+    };
+
+    // Escuchar eventos de la app dentro del `iframe`
+    window.addEventListener("message", function(event) {
+      if (event.data && event.data.type === "resize-iframe") {
+        const newHeight = event.data.height + 200; // 🔥 Más margen extra para evitar cortes
+        if (newHeight) {
+          iframe.style.height = newHeight + "px";
+        }
+      }
+    }, false);
+  });
+</script>
 
 {% schema %}
 {
   "name": "Try-On AI",
-  "target": "section",
-  "settings": [
-    {
-      "type": "range",
-      "id": "width",
-      "label": "Ancho (%)",
-      "min": 50,
-      "max": 100,
-      "step": 5,
-      "default": 100
-    },
-    {
-      "type": "range",
-      "id": "height",
-      "label": "Altura (px)",
-      "min": 400,
-      "max": 1000,
-      "step": 50,
-      "default": 600
-    }
-  ]
+  "target": "section"
 }
 {% endschema %}

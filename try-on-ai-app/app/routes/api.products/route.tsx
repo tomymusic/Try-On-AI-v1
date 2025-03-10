@@ -1,74 +1,75 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
-import { authenticate } from "../../shopify.server";
+import { json } from "@remix-run/node";
+import db from "../../db.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  console.log("🔍 Iniciando loader para obtener el producto actual...");
+  console.log("🔍 Iniciando loader para obtener el producto...");
 
   try {
-    console.log("📡 Request recibido:", request.url);
-
-    // ✅ Obtener el parámetro `handle` o `id` de la URL
     const url = new URL(request.url);
-    const handle = url.searchParams.get("handle"); // Nombre único del producto
-    const productId = url.searchParams.get("id"); // ID único del producto
+    const handle = url.searchParams.get("handle")?.trim() || undefined;
 
-    // ✅ Validar que al menos un identificador fue proporcionado
-    if (!handle && !productId) {
-      console.error("🚨 Error: No se proporcionó ni `handle` ni `id` en la URL.");
-      return new Response(JSON.stringify({ error: "Falta el identificador del producto." }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+    if (!handle) {
+      console.error("🚨 Error: Falta el identificador del producto.");
+      return json({ error: "Falta el identificador del producto." }, { status: 400 });
     }
 
-    // ✅ Autenticar administrador
-    const session = await authenticate.admin(request).catch(() => null);
-    if (!session) {
-      console.error("🚨 No hay sesión válida, redirigiendo a login.");
-      return new Response(null, {
-        status: 302,
-        headers: { Location: "/auth/login" },
-      });
+    // ✅ Obtener el Access Token de los headers
+    const accessToken = request.headers.get("X-Shopify-Access-Token");
+
+    if (!accessToken) {
+      console.error("❌ Falta el Access Token en la petición.");
+      return json({ error: "Falta el Access Token." }, { status: 401 });
     }
-    console.log("🔑 Admin autenticado:", session ? "✅ Sí" : "❌ No");
 
-    // ✅ Consulta GraphQL optimizada para obtener solo el producto solicitado
-    const query = `#graphql
-      query {
-        ${handle ? `productByHandle(handle: "${handle}")` : `product(id: "${productId}")`} {
-          id
-          title
-          descriptionHtml
-          featuredImage {
-            url
-          }
-          variants(first: 5) {
-            edges {
-              node {
-                id
-                price
-              }
-            }
-          }
-        }
-      }`;
+    console.log("🔍 Verificando Access Token en la base de datos...");
+    const store = await db.session.findFirst({ where: { accessToken }, select: { shop: true } });
 
-    console.log("📄 Enviando consulta GraphQL:", query);
+    if (!store) {
+      console.error("❌ Access Token inválido o no encontrado.");
+      return json({ error: "Access Token inválido." }, { status: 403 });
+    }
 
-    // ✅ Ejecutar la consulta GraphQL con la sesión autenticada
-    const response = await session.admin.graphql(query);
+    console.log(`✅ Access Token válido para la tienda: ${store.shop}`);
 
-    console.log("📡 Respuesta de Shopify recibida:", JSON.stringify(response, null, 2));
+    // ✅ Obtener los datos del producto desde Shopify
+    return await fetchProductData(store.shop, accessToken, handle);
 
-    return new Response(JSON.stringify(response), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
   } catch (error) {
-    console.error("❌ Error inesperado en el endpoint de productos:", error);
-    return new Response(JSON.stringify({ error: "Error interno del servidor" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    console.error("❌ Error en el endpoint de productos:", error);
+    return json({ error: "Error interno del servidor" }, { status: 500 });
   }
+}
+
+// ✅ Función para obtener datos del producto desde Shopify
+async function fetchProductData(shop: string, accessToken: string, handle: string) {
+  const query = `#graphql
+    query {
+      productByHandle(handle: "${handle}") {
+        title
+        productType
+        featuredImage { url }
+      }
+    }`;
+
+  console.log("📄 Enviando consulta GraphQL:", query);
+
+  // ✅ Hacer la petición GraphQL a Shopify
+  const response = await fetch(`https://${shop}/admin/api/2025-01/graphql.json`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Shopify-Access-Token": accessToken,
+    },
+    body: JSON.stringify({ query }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Error en la consulta GraphQL: ${response.statusText}`);
+  }
+
+  return new Response(await response.text(), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
 }
